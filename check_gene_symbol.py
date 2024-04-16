@@ -43,7 +43,8 @@ def check_definition_for_gene_symbol(iri, definition):
 
     chat_completion = client.chat.completions.create(
         # model="gpt-3.5-turbo",
-        model="gpt-3.5-turbo-0125",
+        # model="gpt-3.5-turbo-0125",
+        model="gpt-4-turbo",
         messages=[
             {"role": "system", "content": "You are a helpful assistant with knowledge about gene names and symbols."},
             {"role": "user", "content": prompt},
@@ -75,7 +76,6 @@ def main(file_path):
         print(f"\n** Input:\n{iri} -- {gene_label}\n{definition}\n")
 
         # Check for gene symbol in the ?definition field using prompt
-        time.sleep(1)
         possible_gene_symbol = check_definition_for_gene_symbol(iri, definition)
 
        # Regular expression pattern to match gene symbols
