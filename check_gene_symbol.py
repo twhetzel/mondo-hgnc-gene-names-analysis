@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-
-
 import click
 import pandas as pd
 import requests
@@ -8,6 +6,7 @@ import json
 from openai import OpenAI
 import re
 import os
+import time
 
 
 def get_gene_symbol_info(symbol):
@@ -76,6 +75,7 @@ def main(file_path):
         print(f"\n** Input:\n{iri} -- {gene_label}\n{definition}\n")
 
         # Check for gene symbol in the ?definition field using prompt
+        time.sleep(1)
         possible_gene_symbol = check_definition_for_gene_symbol(iri, definition)
 
        # Regular expression pattern to match gene symbols
