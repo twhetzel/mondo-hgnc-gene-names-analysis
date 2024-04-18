@@ -38,8 +38,9 @@ def check_definition_for_gene_symbol(iri, definition):
     )
     
     # User prompt to identify the gene symbol in the text
+    # TODO: Fine tune prompt so it does not return example gene symbols
     prompt = f"Identify any gene symbols in the following text: {definition}. \
-        Include only the gene symbol found in the prompt text."
+        Include only the gene symbol found in the prompt text. Do not return example gene symbols."
 
     chat_completion = client.chat.completions.create(
         # model="gpt-3.5-turbo",
@@ -63,9 +64,9 @@ def main(file_path):
     """
     # Read in data file
     df = pd.read_csv(file_path)
-    print(df.head())
+    # print(df.head())
 
-    df_results = pd.DataFrame(columns=['?cls', '?updated_gene_symbol', '?updated_definition'])
+    df_results = pd.DataFrame(columns=['?cls', 'old_gene_symbol', 'updated_gene_symbol', 'updated_definition'])
     all_gene_symbol_matches = []
 
     for index, row in df.iterrows():
@@ -73,16 +74,18 @@ def main(file_path):
         gene_label = row['?gene_label']
         definition = row['?definition']
 
-        print(f"\n** Input:\n{iri} -- {gene_label}\n{definition}\n")
+        print(f"\n---\n** Input:\n{iri} -- {gene_label}\n{definition}\n")
 
         # Check for gene symbol in the ?definition field using prompt
         possible_gene_symbol = check_definition_for_gene_symbol(iri, definition)
+        print('** PGS:', possible_gene_symbol)
 
        # Regular expression pattern to match gene symbols
         pattern = r"\b[A-Z]{2,}[0-9]*\b"
 
         # Find all matches in the text
         matches = re.findall(pattern, possible_gene_symbol)
+        print(matches, type(matches))
 
         # Check if any matches were found
         if matches:
@@ -99,8 +102,9 @@ def main(file_path):
                     updated_definition = definition.replace(match, results)
 
                     # Append to dictionary to later join back to original dataframe
-                    all_gene_symbol_matches.append({"iri": iri, "gene_symbol": results, "updated_definition": updated_definition})
-                    print(all_gene_symbol_matches)
+                    all_gene_symbol_matches.append({"cls": iri, "old_def_gene_symbol": match,
+                                                    "updated_gene_symbol": results, "updated_definition": updated_definition})
+                    # print(all_gene_symbol_matches)
 
                     
                     # TODO: If not results as previous symbol, try search for alias and symbol 
@@ -110,8 +114,10 @@ def main(file_path):
             else:
                 print('Skip searching...')
         else:
-            all_gene_symbol_matches.append({"iri": iri, "gene_symbol": "No gene symbol found in definition."})
+            all_gene_symbol_matches.append({"cls": iri, "old_def_gene_symbol": "No gene symbol found in definition.",
+                                            "updated_gene_symbol": "", "updated_definition": ""})
 
+    # Debug
     for d in all_gene_symbol_matches:
         print(d)
                 
